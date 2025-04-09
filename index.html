@@ -1,0 +1,142 @@
+<body style="background-color: #121212">
+  <canvas id="main_game_canvas" width="1600" height="900"></canvas>
+  <br />
+  <span
+    id="debug_span"
+    style="
+      color: #ffffff;
+      font-size: 20px;
+      line-height: 26px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    "
+  ></span>
+</body>
+<script>
+  const CONFIG = {
+    TARGET_FPS: 60,
+    WIDTH: 1600,
+    HEIGHT: 900,
+    SPEED_MOFIFIER: 0.08,
+    DIAGONAL_MODIFIER: 1.414,
+  };
+
+  const ctx = document.getElementById("main_game_canvas").getContext("2d");
+
+  const inputState = {
+    ArrowUp: false,
+    ArrowDown: false,
+    ArrowLeft: false,
+    ArrowRight: false,
+  };
+
+  document.addEventListener(
+    "keydown",
+    (e) => e.key in inputState && (() => (inputState[e.key] = true))()
+  );
+  document.addEventListener(
+    "keyup",
+    (e) => e.key in inputState && (() => (inputState[e.key] = false))()
+  );
+
+  const gameState = {
+    player: {
+      position: {
+        x: 100,
+        y: 100,
+      },
+      stats: {
+        movement_speed: 10,
+        width: 50,
+        height: 50,
+      },
+    },
+    frameTime: 0,
+  };
+
+  const gameFrame = async () => {
+    movePlayer();
+    refreshScreen();
+    drawPlayer();
+    debug(
+      `Frame Time: ${gameState.frameTime.toFixed(0)}ms<br>Frame Rate: ${(
+        1000 / gameState.frameTime
+      ).toFixed(2)}FPS<br>Target Framerate: ${
+        CONFIG.TARGET_FPS
+      }FPS<br>Resolution: ${CONFIG.WIDTH}x${
+        CONFIG.HEIGHT
+      }px<br>Player Position X: ${
+        gameState.player.position.x
+      }px<br>Player Position Y: ${gameState.player.position.y}px`
+    );
+  };
+
+  const gameLoop = async () => {
+    while (true) {
+      const start = new Date().valueOf();
+      await gameFrame();
+      gameState.frameTime = new Date().valueOf() - start;
+      if (gameState.frameTime < 1000 / CONFIG.TARGET_FPS) {
+        await delay(1000 / CONFIG.TARGET_FPS - gameState.frameTime);
+        gameState.frameTime = 1000 / CONFIG.TARGET_FPS;
+      }
+    }
+  };
+
+  const movePlayer = () => {
+    const speed =
+      gameState.player.stats.movement_speed /
+      ((inputState.ArrowDown || inputState.ArrowUp) &&
+      (inputState.ArrowLeft || inputState.ArrowRight)
+        ? CONFIG.DIAGONAL_MODIFIER
+        : 1);
+    if (inputState.ArrowUp)
+      gameState.player.position.y -= Math.round(
+        speed * gameState.frameTime * CONFIG.SPEED_MOFIFIER
+      );
+    if (inputState.ArrowDown)
+      gameState.player.position.y += Math.round(
+        speed * gameState.frameTime * CONFIG.SPEED_MOFIFIER
+      );
+    if (inputState.ArrowLeft)
+      gameState.player.position.x -= Math.round(
+        speed * gameState.frameTime * CONFIG.SPEED_MOFIFIER
+      );
+    if (inputState.ArrowRight)
+      gameState.player.position.x += Math.round(
+        speed * gameState.frameTime * CONFIG.SPEED_MOFIFIER
+      );
+    correctPlayerPosition();
+  };
+
+  const correctPlayerPosition = () => {
+    if (gameState.player.position.x < 0 - gameState.player.stats.width)
+      gameState.player.position.x = CONFIG.WIDTH;
+    if (gameState.player.position.x > CONFIG.WIDTH)
+      gameState.player.position.x = 0 - gameState.player.stats.width;
+    if (gameState.player.position.y < 0 - gameState.player.stats.height)
+      gameState.player.position.y = CONFIG.HEIGHT;
+    if (gameState.player.position.y > CONFIG.HEIGHT)
+      gameState.player.position.y = 0 - gameState.player.stats.height;
+  };
+
+  const drawPlayer = () => {
+    ctx.fillStyle = "red";
+    const { x, y } = gameState.player.position;
+    ctx.fillRect(
+      x,
+      y,
+      gameState.player.stats.width,
+      gameState.player.stats.height
+    );
+  };
+
+  const refreshScreen = () => {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+  };
+
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const debug = (s) => (document.getElementById("debug_span").innerHTML = s);
+
+  gameLoop();
+</script>
