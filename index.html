@@ -58,15 +58,12 @@
     refreshScreen();
     drawPlayer();
     debug(
-      `Frame Time: ${gameState.frameTime.toFixed(0)}ms<br>Framerate: ${(
-        1000 / gameState.frameTime
-      ).toFixed(2)}FPS<br>Target Framerate: ${
-        CONFIG.TARGET_FPS
-      }FPS<br>Resolution: ${CONFIG.WIDTH}x${
-        CONFIG.HEIGHT
-      }px<br>Player Position X: ${
-        gameState.player.position.x
-      }px<br>Player Position Y: ${gameState.player.position.y}px`
+      `Frametime: ${gameState.frameTime.toFixed(0)}ms<br>
+      Framerate: ${(1000 / gameState.frameTime).toFixed(2)}FPS<br>
+      Target Framerate: ${CONFIG.TARGET_FPS}FPS<br>
+      Resolution: ${CONFIG.WIDTH}x${CONFIG.HEIGHT}px<br>
+      Player Position X: ${gameState.player.position.x}px<br>
+      Player Position Y: ${gameState.player.position.y}px`
     );
   };
 
